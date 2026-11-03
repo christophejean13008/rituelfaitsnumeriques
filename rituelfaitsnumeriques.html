@@ -398,7 +398,7 @@ function efface(){
 function calcul(){
   S.phase='calcul';const x=S.items[S.i];majEtapes(E.t?[1]:[1,2]);
   aff(`<div id="q" class="${classeQ(x)}">${qHTML(x)}</div>`);
-  bas(`<button class="act" onclick="leve()">⬆️ Ardoises levées</button>`);
+  bas(E.t?'':`<button class="act" onclick="leve()">⬆️ Ardoises levées</button>`);
   if(E.flash){setTimeout(()=>{if(S&&S.phase==='calcul'&&S.items[S.i]===x){aff(`<div id="grand"><span id="ecris">✍️</span><small>Écris le résultat sur ton ardoise</small></div>`);}},2000);}
   if(E.t) programme(E.t*1000,leve,true); else annule();
 }
