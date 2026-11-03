@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rituel Faits Numériques</title>
+<style>
+:root{--bg:#fdf8ee;--ink:#1f2a37;--bleu:#1d4e89;--bleu2:#e3edf9;--jaune:#f2a531;--vert:#2e9e5b;--orange:#ef8a1f;--rouge:#d64545;--gris:#8a94a3;--carte:#fff}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;-webkit-user-select:none;user-select:none}
+button{font:inherit;cursor:pointer;border:none;border-radius:16px;touch-action:manipulation}
+.ecran{display:none;min-height:100vh}
+.ecran.on{display:flex;flex-direction:column}
+/* ---------- Réglages ---------- */
+#reglages{padding:18px 26px 40px;gap:16px;max-width:1500px;margin:0 auto}
+header{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+header h1{margin:0;font-size:2.1rem;color:var(--bleu)}
+header h1 small{display:block;font-size:1.05rem;color:var(--gris);font-weight:normal}
+.classe{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:1.1rem}
+.classe input{font:inherit;padding:10px 14px;border-radius:12px;border:2px solid #cfd6df;width:200px}
+.niveaux{display:flex;gap:10px;flex-wrap:wrap}
+.niveaux button{font-size:1.6rem;font-weight:bold;padding:12px 30px;background:var(--bleu2);color:var(--bleu)}
+.niveaux button.on{background:var(--bleu);color:#fff}
+.niveaux button .nb{display:inline-block;min-width:26px;margin-left:8px;padding:0 6px;border-radius:12px;background:var(--jaune);color:#fff;font-size:1rem;vertical-align:middle}
+h2{margin:6px 0 2px;font-size:1.3rem;color:var(--bleu)}
+.familles{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.fam{background:var(--carte);border:3px solid #dfe5ec;padding:14px 16px;text-align:left;display:flex;flex-direction:column;gap:6px;min-height:92px}
+.fam b{font-size:1.15rem}
+.fam span{color:var(--gris);font-size:1.05rem}
+.fam.on{border-color:var(--vert);background:#eaf7ef}
+.fam.on b::before{content:"✔ ";color:var(--vert)}
+.tables{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:1.1rem}
+.tables button{width:62px;height:56px;font-size:1.5rem;font-weight:bold;background:#fff;border:3px solid #dfe5ec;color:var(--ink)}
+.tables button.on{background:var(--jaune);border-color:var(--jaune);color:#fff}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px}
+.opt{background:#fff;border-radius:16px;padding:12px 16px;border:2px solid #e6eaf0}
+.opt label{display:block;font-weight:bold;margin-bottom:8px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{padding:10px 16px;font-size:1.15rem;background:var(--bleu2);color:var(--bleu)}
+.seg button.on{background:var(--bleu);color:#fff}
+.bascules{display:flex;flex-direction:column;gap:6px}
+.bascule{display:flex;align-items:center;gap:10px;font-size:1.08rem;background:none;text-align:left;padding:4px 0}
+.bascule i{width:48px;height:28px;border-radius:14px;background:#cfd6df;position:relative;flex:none;transition:.2s}
+.bascule i::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:.2s}
+.bascule.on i{background:var(--vert)}
+.bascule.on i::after{left:23px}
+.go{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:6px}
+.gros{font-size:1.7rem;font-weight:bold;padding:18px 34px;background:var(--vert);color:#fff;box-shadow:0 5px 0 #1f7442}
+.gros:disabled{background:#b9c2cc;box-shadow:0 5px 0 #98a2ad;cursor:default}
+.second{font-size:1.25rem;padding:14px 22px;background:var(--orange);color:#fff;box-shadow:0 4px 0 #b9650f}
+.lien{background:none;color:var(--gris);text-decoration:underline;font-size:1rem;padding:6px}
+.info{color:var(--gris);font-size:1.05rem}
+/* ---------- Rituel ---------- */
+#rituel{height:100vh;overflow:hidden}
+.haut{display:flex;align-items:center;gap:12px;padding:12px 18px}
+.etapes{display:flex;gap:8px;flex:1;justify-content:center;flex-wrap:wrap}
+.etapes div{padding:10px 18px;border-radius:30px;background:#ece6d8;color:#9a917e;font-size:1.35rem;font-weight:bold;transition:.25s}
+.etapes div.on{background:var(--bleu);color:#fff;transform:scale(1.08)}
+.petit{font-size:1.2rem;padding:10px 16px;background:#e9edf2;color:var(--ink)}
+.points{display:flex;gap:8px;justify-content:center;padding:0 0 6px}
+.points i{width:22px;height:22px;border-radius:50%;background:#e2dccd;border:3px solid transparent}
+.points i.cur{border-color:var(--bleu)}
+.points i.v{background:var(--vert)}.points i.o{background:var(--orange)}.points i.r{background:var(--rouge)}.points i.f{background:#9aa6b4}
+.scene{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;padding:0 20px}
+#q{font-size:clamp(70px,13vw,230px);font-weight:bold;line-height:1.1;text-align:center;white-space:nowrap}
+#q.long{font-size:clamp(50px,8.5vw,150px);white-space:normal}
+.trou{display:inline-block;width:1.1em;height:.95em;border:.07em dashed var(--bleu);border-radius:.12em;vertical-align:-.1em;background:#fff}
+.rep{color:var(--vert);display:inline-block;animation:pop .45s}
+@keyframes pop{0%{transform:scale(.3);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;font-size:.62em;line-height:1;margin:0 .08em}
+.fr span:first-child{border-bottom:.08em solid currentColor;padding:0 .1em}
+#grand{font-size:clamp(60px,10vw,180px);font-weight:bold;color:var(--bleu);text-align:center}
+#grand small{display:block;font-size:.3em;color:var(--gris);font-weight:normal;margin-top:10px}
+#ecris{font-size:clamp(60px,9vw,160px)}
+#strat{margin-top:18px;font-size:clamp(22px,2.4vw,38px);background:#fff6e2;border:3px solid var(--jaune);border-radius:20px;padding:12px 26px;max-width:90%;text-align:center}
+.tf{display:flex;gap:28px;margin-top:22px}
+.fr10{display:grid;grid-template-columns:repeat(5,52px);grid-template-rows:repeat(2,52px);border:4px solid var(--ink);background:#fff}
+.fr10 i{border:2px solid #9aa6b4;display:flex;align-items:center;justify-content:center}
+.fr10 i.r::after,.fr10 i.b::after{content:"";width:38px;height:38px;border-radius:50%}
+.fr10 i.r::after{background:var(--rouge)}.fr10 i.b::after{background:var(--bleu)}
+.leve{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.leve div{background:var(--jaune);color:#fff;font-size:clamp(50px,7vw,120px);font-weight:bold;padding:24px 60px;border-radius:40px;box-shadow:0 10px 30px rgba(0,0,0,.2);animation:pop .4s}
+.chrono{height:30px;margin:0 40px 10px;background:#ece6d8;border-radius:15px;overflow:hidden;position:relative}
+.chrono div{height:100%;background:var(--bleu);border-radius:15px;transition:background .3s}
+.chrono div.fin{background:var(--rouge)}
+.chrono span{position:absolute;left:14px;top:0;line-height:30px;font-weight:bold;color:#fff;font-size:1.2rem;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+.bas{display:flex;justify-content:center;align-items:center;gap:16px;padding:10px 18px 22px;min-height:110px;flex-wrap:wrap}
+.bas .act{font-size:2rem;font-weight:bold;padding:18px 40px;background:var(--bleu);color:#fff;box-shadow:0 5px 0 #133561}
+.note{font-size:1.5rem;font-weight:bold;padding:16px 24px;color:#fff}
+.note.v{background:var(--vert);box-shadow:0 5px 0 #1f7442}.note.o{background:var(--orange);box-shadow:0 5px 0 #b9650f}.note.r{background:var(--rouge);box-shadow:0 5px 0 #9c2e2e}
+.note.choisi{outline:6px solid var(--ink);outline-offset:3px}
+.pause{position:absolute;inset:0;background:rgba(253,248,238,.92);display:none;align-items:center;justify-content:center;font-size:5rem;font-weight:bold;color:var(--bleu);z-index:5}
+.pause.on{display:flex}
+/* ---------- Bilan ---------- */
+#bilan{padding:24px 30px;gap:18px;max-width:1500px;margin:0 auto;width:100%}
+.compte{display:flex;gap:14px;flex-wrap:wrap}
+.compte div{padding:14px 24px;border-radius:16px;color:#fff;font-size:1.4rem;font-weight:bold}
+.grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.grille div{background:#fff;border-radius:14px;padding:12px 14px;border-left:10px solid #9aa6b4;font-size:1.5rem;font-weight:bold}
+.grille div small{display:block;font-size:.95rem;color:var(--gris);font-weight:normal}
+.grille div.v{border-color:var(--vert)}.grille div.o{border-color:var(--orange)}.grille div.r{border-color:var(--rouge)}
+.grille .fr{font-size:.8em}
+</style>
+</head>
+<body>
+
+<!-- ================= RÉGLAGES ================= -->
+<section id="reglages" class="ecran on">
+  <header>
+    <h1>✏️ Rituel Faits Numériques<small>L’ardoise des faits numériques – rituel collectif CP → CM2</small></h1>
+    <div class="classe">Classe : <input id="classe" placeholder="ex. CE1 Mme Martin" maxlength="40"></div>
+  </header>
+
+  <div class="niveaux" id="niveaux"></div>
+  <h2 id="titreFam">Faits numériques</h2>
+  <div class="familles" id="familles"></div>
+
+  <div id="blocTables">
+    <h2>Tables de multiplication</h2>
+    <div class="tables" id="tables"><span>Tables travaillées :</span></div>
+    <div class="familles" id="famTables" style="margin-top:10px"></div>
+  </div>
+
+  <h2>Le rituel</h2>
+  <div class="opts">
+    <div class="opt"><label>Nombre de calculs</label><div class="seg" id="optN"></div></div>
+    <div class="opt"><label>Temps pour calculer et écrire</label><div class="seg" id="optT"></div></div>
+    <div class="opt"><label>Enchaînement</label><div class="seg" id="optM"></div></div>
+    <div class="opt"><label>Options</label><div class="bascules" id="optB"></div></div>
+  </div>
+
+  <div class="go">
+    <button class="gros" id="lancer">▶ Commencer le rituel</button>
+    <button class="second" id="fragiles" style="display:none"></button>
+    <button class="lien" id="effFragiles" style="display:none">effacer la liste</button>
+    <span class="info" id="infoSel"></span>
+  </div>
+  <p class="info">Au clavier : <b>Espace</b> = étape suivante · <b>1 / 2 / 3</b> = réussite de la classe · <b>P</b> = pause · <b>Échap</b> = arrêter.</p>
+</section>
+
+<!-- ================= RITUEL ================= -->
+<section id="rituel" class="ecran">
+  <div class="haut">
+    <button class="petit" id="stop">✖ Arrêter</button>
+    <div class="etapes" id="etapes"></div>
+    <button class="petit" id="btnPause">⏸ Pause</button>
+    <button class="petit" id="plein">⛶</button>
+  </div>
+  <div class="points" id="points"></div>
+  <div class="scene" id="scene"></div>
+  <div class="chrono" id="chrono" style="visibility:hidden"><div id="barre"></div><span id="sec"></span></div>
+  <div class="bas" id="bas"></div>
+  <div class="pause" id="voilePause">⏸ Pause</div>
+</section>
+
+<!-- ================= BILAN ================= -->
+<section id="bilan" class="ecran">
+  <h1 style="color:var(--bleu);margin:0">🏁 Bilan du rituel</h1>
+  <div class="compte" id="compte"></div>
+  <div class="grille" id="grille"></div>
+  <div class="go">
+    <button class="second" id="rejouer">🔁 Retravailler les faits orange et rouges</button>
+    <button class="gros" id="encore">▶ Un nouveau rituel</button>
+    <button class="petit" id="retour">⚙ Réglages</button>
+  </div>
+  <p class="info" id="infoBilan"></p>
+</section>
+
+<script>
+/* ============ Outils ============ */
+const $=s=>document.querySelector(s);
+const R=(a,b,s=1)=>{const r=[];for(let i=a;i<=b;i+=s)r.push(i);return r;};
+const f=x=>(Math.round(x*1e6)/1e6).toLocaleString('fr-FR',{maximumFractionDigits:3});
+const fr=(n,d)=>`<span class="fr"><span>${n}</span><span>${d}</span></span>`;
+const cle=q=>q.replace(/<span class="fr"><span>(\d+)<\/span><span>(\d+)<\/span><\/span>/g,'$1/$2').replace(/<[^>]+>/g,'');
+const it=(q,a,h,vis)=>({q,a:String(a),h:h||'',vis:vis||null,k:cle(q)});
+const melange=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const pgcd=(a,b)=>b?pgcd(b,a%b):a;
+const lire=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}};
+const ecrire=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}};
+
+/* ============ Aides stratégiques ============ */
+function stratAdd(a,b){
+  if(a===b) return `Le double de ${a}.`;
+  if(Math.abs(a-b)===1){const m=Math.min(a,b);return `Presque un double : ${m} + ${m} = ${2*m}, puis + 1.`;}
+  if(a===9||b===9){const o=a===9?b:a;return `+ 9, c’est + 10 puis − 1 : ${o} + 10 = ${o+10}, puis − 1.`;}
+  const g=Math.max(a,b),p=Math.min(a,b),c=10-g;
+  return `Je passe par 10 : ${g} + ${c} = 10, puis + ${p-c}.`;
+}
+function dbl(n){
+  if(n%100===0) return `Double de ${n/100} centaines = ${n/50} centaines.`;
+  if(n%10===0) return `Double de ${n/10} dizaines = ${n/5} dizaines.`;
+  const d=n-n%10,u=n%10;
+  return d?`Double de ${d} = ${2*d}, double de ${u} = ${2*u}.`:`${n} + ${n}`;
+}
+function stratMul(a,b){
+  return ({2:`C’est le double de ${b}.`,3:`${b} + ${b} + ${b}`,4:`Double du double : ${b} → ${2*b} → ${4*b}.`,
+    5:`La moitié de ${b} × 10 = ${10*b}.`,6:`${b} × 5 = ${5*b}, puis + ${b}.`,7:`${b} × 5 = ${5*b}, plus ${b} × 2 = ${2*b}.`,
+    8:`Double de ${b} × 4 = ${4*b}.`,9:`${b} × 10 = ${10*b}, puis − ${b}.`,10:`${b} dizaines.`})[a];
+}
+const pl=(n,w)=>`${n} ${w}${n>1?'s':''}`;
+const rangs=m=>m===10?'un rang':m===100?'deux rangs':'trois rangs';
+
+/* ============ Familles de faits ============ */
+const NIV=['CP','CE1','CE2','CM1','CM2'];
+const FAM=[
+/* ---- CP ---- */
+{id:'cp1',niv:'CP',nom:'+1 / −1',ex:'7 + 1 · 12 − 1',gen:()=>[
+  ...R(0,19).map(n=>it(`${n} + 1`,n+1,`Le nombre qui vient juste après ${n}.`)),
+  ...R(1,20).map(n=>it(`${n} − 1`,n-1,`Le nombre qui vient juste avant ${n}.`))]},
+{id:'cp2',niv:'CP',nom:'Compléments à 10',ex:'6 + … = 10',gen:()=>R(1,9).map(a=>it(`${a} + # = 10`,10-a,`${a} et ${10-a} sont des amis de 10.`,[a,10-a]))},
+{id:'cp3',niv:'CP',nom:'Décompositions de 5 à 9',ex:'3 + … = 7',gen:()=>R(5,9).flatMap(n=>R(1,n-1).map(a=>it(`${a} + # = ${n}`,n-a,`${a} + ${n-a} = ${n}`,[a,n-a])))},
+{id:'cp4',niv:'CP',nom:'Doubles jusqu’à 10 + 10',ex:'6 + 6',gen:()=>R(1,10).map(n=>it(`${n} + ${n}`,2*n,`Le double de ${n}.`,[n,n]))},
+{id:'cp5',niv:'CP',nom:'Sommes jusqu’à 10',ex:'4 + 3',gen:()=>R(1,9).flatMap(a=>R(1,10-a).map(b=>it(`${a} + ${b}`,a+b,
+  a===b?`Le double de ${a}.`:`Je pars du plus grand, ${Math.max(a,b)}, et j’avance de ${Math.min(a,b)}.`,[a,b])))},
+{id:'cp6',niv:'CP',nom:'Soustractions dans 10',ex:'9 − 4',gen:()=>R(2,10).flatMap(n=>R(1,n-1).map(b=>it(`${n} − ${b}`,n-b,`Je pense à l’addition : ${b} + ${n-b} = ${n}.`)))},
+{id:'cp7',niv:'CP',nom:'10 + unités',ex:'10 + 7',gen:()=>R(1,9).flatMap(n=>[it(`10 + ${n}`,10+n,`1 dizaine et ${pl(n,'unité')}.`,[10,n]),it(`${n} + 10`,10+n,`1 dizaine et ${pl(n,'unité')}.`,[n,10])])},
+{id:'cp8',niv:'CP',nom:'Moitiés jusqu’à 20',ex:'la moitié de 8',gen:()=>R(1,10).map(n=>it(`la moitié de ${2*n}`,n,`${n} + ${n} = ${2*n}`,[n,n]))},
+/* ---- CE1 ---- */
+{id:'ce1a',niv:'CE1',nom:'Répertoire additif (jusqu’à 18)',ex:'8 + 7',gen:()=>R(2,9).flatMap(a=>R(2,9).filter(b=>a+b>10).map(b=>it(`${a} + ${b}`,a+b,stratAdd(a,b),[a,b])))},
+{id:'ce1b',niv:'CE1',nom:'Soustractions dans 20',ex:'15 − 8',gen:()=>R(11,18).flatMap(n=>R(2,9).filter(b=>n-b>=2&&n-b<=9).map(b=>it(`${n} − ${b}`,n-b,`Je pense à l’addition : ${b} + ${n-b} = ${n}.`)))},
+{id:'ce1c',niv:'CE1',nom:'Compléments à la dizaine',ex:'37 + … = 40',gen:()=>R(11,99).filter(n=>n%10).map(n=>{const d=Math.ceil(n/10)*10;return it(`${n} + # = ${d}`,d-n,`${n%10} + ${d-n} = 10`);})},
+{id:'ce1d',niv:'CE1',nom:'Compléments à 100 (dizaines)',ex:'30 + … = 100',gen:()=>R(10,90,10).map(d=>it(`${d} + # = 100`,100-d,`${pl(d/10,'dizaine')} + ${pl(10-d/10,'dizaine')} = 10 dizaines.`))},
+{id:'ce1e',niv:'CE1',nom:'+10 / −10 · +9 / −9',ex:'46 + 9',gen:()=>[
+  ...R(5,89).map(n=>it(`${n} + 10`,n+10,'Le chiffre des dizaines augmente de 1.')),
+  ...R(15,99).map(n=>it(`${n} − 10`,n-10,'Le chiffre des dizaines diminue de 1.')),
+  ...R(11,89).map(n=>it(`${n} + 9`,n+9,`+ 10 puis − 1 : ${n+10} − 1.`)),
+  ...R(20,99).map(n=>it(`${n} − 9`,n-9,`− 10 puis + 1 : ${n-10} + 1.`))]},
+{id:'ce1f',niv:'CE1',nom:'Doubles et moitiés (jusqu’à 100)',ex:'le double de 15',gen:()=>[
+  ...[11,12,13,14,15,16,17,18,19,20,25,30,35,40,45,50].map(n=>it(`le double de ${n}`,2*n,dbl(n))),
+  ...[12,14,16,18,20,22,24,26,28,30,40,50,60,70,80,90,100].map(n=>it(`la moitié de ${n}`,n/2,`${n/2} + ${n/2} = ${n}`))]},
+/* ---- CE2 ---- */
+{id:'ce2a',niv:'CE2',nom:'Compléments à 100',ex:'64 + … = 100',gen:()=>R(11,89).filter(n=>n%10).map(n=>{const d=Math.ceil(n/10)*10;return it(`${n} + # = 100`,100-n,`${n} + ${d-n} = ${d}, puis ${d} + ${100-d} = 100.`);})},
+{id:'ce2b',niv:'CE2',nom:'Calculs sur les dizaines',ex:'70 + 50 · 130 − 60',gen:()=>[
+  ...R(20,90,10).flatMap(a=>R(20,90,10).filter(b=>a+b>100).map(b=>it(`${a} + ${b}`,a+b,`${a/10} + ${b/10} = ${(a+b)/10} dizaines.`))),
+  ...R(110,180,10).flatMap(a=>R(20,90,10).filter(b=>a-b<100).map(b=>it(`${a} − ${b}`,a-b,`${a/10} − ${b/10} = ${(a-b)/10} dizaines.`)))]},
+{id:'ce2c',niv:'CE2',nom:'× 10 et × 100',ex:'34 × 10',gen:()=>[
+  ...R(2,99).map(n=>it(`${n} × 10`,f(n*10),'Chaque chiffre prend une valeur 10 fois plus grande.')),
+  ...R(2,30).map(n=>it(`${n} × 100`,f(n*100),'Chaque chiffre prend une valeur 100 fois plus grande.'))]},
+{id:'ce2d',niv:'CE2',nom:'Compléments à 1 000',ex:'300 + … = 1 000',gen:()=>R(100,950,50).map(c=>it(`${f(c)} + # = ${f(1000)}`,f(1000-c),
+  c%100?`${c} + 50 = ${c+50}, puis ${c+50} + ${1000-c-50} = ${f(1000)}.`:`${pl(c/100,'centaine')} + ${pl(10-c/100,'centaine')} = 10 centaines.`))},
+{id:'ce2e',niv:'CE2',nom:'Doubles et moitiés usuels',ex:'le double de 25',gen:()=>[
+  ...[15,25,35,45,50,60,75,100,150,250,500].map(n=>it(`le double de ${n}`,f(2*n),dbl(n))),
+  ...[30,50,70,90,100,120,200,300,500,1000].map(n=>it(`la moitié de ${f(n)}`,n/2,`${n/2} + ${n/2} = ${f(n)}`))]},
+/* ---- CM1 ---- */
+{id:'cm1a',niv:'CM1',nom:'× 10, × 100, × 1 000',ex:'47 × 100',gen:()=>[
+  ...R(2,99).map(n=>it(`${n} × 10`,f(n*10),'Chaque chiffre avance d’un rang vers la gauche.')),
+  ...R(2,99).map(n=>it(`${n} × 100`,f(n*100),'Chaque chiffre avance de deux rangs vers la gauche.')),
+  ...R(2,50).map(n=>it(`${n} × ${f(1000)}`,f(n*1000),'Chaque chiffre avance de trois rangs vers la gauche.'))]},
+{id:'cm1b',niv:'CM1',nom:'÷ 10 et ÷ 100',ex:'4 700 ÷ 100',gen:()=>[
+  ...R(2,99).map(n=>it(`${f(n*10)} ÷ 10`,n,'Chaque chiffre recule d’un rang vers la droite.')),
+  ...R(2,99).map(n=>it(`${f(n*100)} ÷ 100`,n,'Chaque chiffre recule de deux rangs vers la droite.'))]},
+{id:'cm1c',niv:'CM1',nom:'Dizaines × nombre',ex:'30 × 7',gen:()=>R(20,90,10).flatMap(d=>R(2,9).map(b=>{const h=`${d/10} × ${b} = ${d/10*b}, donc ${d/10*b} dizaines.`;return Math.random()<.5?it(`${d} × ${b}`,d*b,h):it(`${b} × ${d}`,d*b,h);}))},
+{id:'cm1d',niv:'CM1',nom:'Compléments à 1 (dixièmes)',ex:'0,3 + … = 1',gen:()=>R(1,9).flatMap(t=>[
+  it(`0,${t} + # = 1`,f((10-t)/10),`${pl(t,'dixième')} + ${pl(10-t,'dixième')} = 10 dixièmes.`),
+  it(`1 − 0,${t}`,f((10-t)/10),`10 dixièmes − ${pl(t,'dixième')} = ${pl(10-t,'dixième')}.`)])},
+{id:'cm1e',niv:'CM1',nom:'Moitié, tiers, quart',ex:'le quart de 24',gen:()=>[['la moitié',2],['le tiers',3],['le quart',4]].flatMap(([nm,d])=>R(2,10).map(k=>
+  it(`${nm} de ${d*k}`,k,`${d*k} ÷ ${d} = ${k}`+(d===4?` (la moitié de la moitié).`:'.'))))},
+{id:'cm1f',niv:'CM1',nom:'Doubles et moitiés décimaux',ex:'le double de 2,5',gen:()=>[
+  ...[0.5,1.5,2.5,3.5,4.5,7.5,1.2,2.4,0.3].map(x=>{const e=Math.floor(x),r=Math.round((x-e)*10)/10;
+    return it(`le double de ${f(x)}`,f(2*x),e?`Double de ${e} = ${2*e}, double de ${f(r)} = ${f(2*r)}.`:`${Math.round(x*10)} dixièmes × 2 = ${Math.round(x*20)} dixièmes.`);}),
+  ...[1,3,5,7,9,11,15].map(n=>it(`la moitié de ${n}`,f(n/2),n===1?'1 = 10 dixièmes ; la moitié : 5 dixièmes.':`Moitié de ${n-1} = ${(n-1)/2}, moitié de 1 = 0,5.`)),
+  ...[0.6,0.8,2.4,4.6].map(x=>it(`la moitié de ${f(x)}`,f(x/2),`${Math.round(x*10)} dixièmes ÷ 2 = ${Math.round(x*5)} dixièmes.`))]},
+/* ---- CM2 ---- */
+{id:'cm2a',niv:'CM2',nom:'× 10, 100, 1 000 (décimaux)',ex:'3,5 × 100',gen:()=>[[5,1],[7,1],[12,1],[25,1],[38,1],[425,2],[8,2],[35,2],[124,1],[605,2],[9,1],[76,1],[3,2],[45,3]].flatMap(([n,d])=>
+  [10,100,1000].map(m=>it(`${f(n/10**d)} × ${f(m)}`,f(n*m/10**d),`× ${f(m)} : chaque chiffre avance ${m===10?'d’':'de '}${rangs(m)} vers la gauche.`)))},
+{id:'cm2b',niv:'CM2',nom:'÷ 10, 100, 1 000 (décimaux)',ex:'45 ÷ 100',gen:()=>[45,7,320,1250,8,63,4.5,12.8,600,95,3,250].flatMap(x=>
+  [10,100,1000].map(m=>it(`${f(x)} ÷ ${f(m)}`,f(x/m),`÷ ${f(m)} : chaque chiffre recule ${m===10?'d’':'de '}${rangs(m)} vers la droite.`)))},
+{id:'cm2c',niv:'CM2',nom:'Compléments à 1 (centièmes)',ex:'0,35 + … = 1',gen:()=>[5,15,25,35,45,55,65,75,85,95,30,60,12,48,73,8].map(c=>
+  it(`${f(c/100)} + # = 1`,f((100-c)/100),`${pl(c,'centième')} + ${pl(100-c,'centième')} = 100 centièmes.`))},
+{id:'cm2d',niv:'CM2',nom:'Fraction d’une quantité',ex:'¾ de 20',gen:()=>[2,3,4,5,10].flatMap(d=>R(1,d-1).filter(n=>pgcd(n,d)===1).flatMap(n=>R(2,10).map(k=>
+  it(`${fr(n,d)} de ${d*k}`,n*k,n===1?`${d*k} ÷ ${d} = ${k}.`:`${d*k} ÷ ${d} = ${k}, puis ${k} × ${n} = ${n*k}.`))))},
+{id:'cm2e',niv:'CM2',nom:'Pourcentages simples',ex:'25 % de 80',gen:()=>[
+  ...R(20,200,10).map(x=>it(`50 % de ${x}`,x/2,'50 %, c’est la moitié.')),
+  ...R(50,500,50).map(x=>it(`10 % de ${x}`,x/10,'10 %, c’est le dixième : ÷ 10.')),
+  ...R(20,200,20).map(x=>it(`25 % de ${x}`,x/4,'25 %, c’est le quart : la moitié de la moitié.'))]},
+{id:'cm2f',niv:'CM2',nom:'× 5, × 25, × 50',ex:'16 × 25',gen:()=>[
+  ...R(12,40,2).map(n=>it(`${n} × 5`,n*5,`× 10 puis la moitié : ${n*10} ÷ 2.`)),
+  ...R(2,12).map(n=>it(`${n} × 25`,n*25,`× 100 puis le quart : ${n*100} ÷ 4.`)),
+  ...R(2,20).map(n=>it(`${n} × 50`,f(n*50),`× 100 puis la moitié : ${n*100} ÷ 2.`))]},
+/* ---- Tables ---- */
+{id:'t1',niv:'TAB',nom:'Produits',ex:'7 × 8',gen:t=>t.flatMap(a=>R(2,10).map(b=>Math.random()<.5?it(`${a} × ${b}`,a*b,stratMul(a,b)):it(`${b} × ${a}`,a*b,stratMul(a,b))))},
+{id:'t2',niv:'TAB',nom:'Facteur manquant',ex:'6 × … = 42',gen:t=>t.flatMap(a=>R(2,10).map(b=>it(`${a} × # = ${a*b}`,b,`Dans la table de ${a} : ${a} × ${b} = ${a*b}.`)))},
+{id:'t3',niv:'TAB',nom:'Divisions (combien de fois ?)',ex:'42 ÷ 6',gen:t=>t.flatMap(a=>R(2,10).map(b=>it(`${a*b} ÷ ${a}`,b,`${a} × ${b} = ${a*b}`)))}
+];
+const TPS={CP:10,CE1:8,CE2:6,CM1:5,CM2:5};
+
+/* ============ État ============ */
+const P=lire('adaptfaits_reglages',{});
+const E={niv:P.niv||'CP',sel:new Set(P.sel||[]),tables:new Set(P.tables||[2,3,4,5]),
+  n:P.n||10,t:P.t??10,mode:P.mode||'manuel',flash:!!P.flash,strat:P.strat!==false,visu:P.visu!==false,bip:P.bip!==false,classe:P.classe||''};
+const sauver=()=>ecrire('adaptfaits_reglages',{niv:E.niv,sel:[...E.sel],tables:[...E.tables],n:E.n,t:E.t,mode:E.mode,flash:E.flash,strat:E.strat,visu:E.visu,bip:E.bip,classe:E.classe});
+let FRAG=lire('adaptfaits_fragiles',{});
+const nomClasse=()=>E.classe.trim()||'Ma classe';
+
+/* ============ Écran réglages ============ */
+function carte(F){
+  const b=document.createElement('button');b.className='fam'+(E.sel.has(F.id)?' on':'');
+  b.innerHTML=`<b>${F.nom}</b><span>${F.ex}</span>`;
+  b.onclick=()=>{E.sel.has(F.id)?E.sel.delete(F.id):E.sel.add(F.id);majReglages();};
+  return b;
+}
+function seg(id,vals,cur,lab,set){
+  const el=$(id);el.innerHTML='';
+  vals.forEach(v=>{const b=document.createElement('button');b.textContent=lab(v);if(v===cur)b.className='on';b.onclick=()=>{set(v);majReglages();};el.appendChild(b);});
+}
+function majReglages(){
+  const nv=$('#niveaux');nv.innerHTML='';
+  NIV.forEach(n=>{const c=FAM.filter(F=>F.niv===n&&E.sel.has(F.id)).length;const b=document.createElement('button');
+    b.innerHTML=n+(c?`<span class="nb">${c}</span>`:'');if(n===E.niv)b.className='on';
+    b.onclick=()=>{E.niv=n;E.t=TPS[n];majReglages();};nv.appendChild(b);});
+  $('#titreFam').textContent='Faits numériques – '+E.niv;
+  const fa=$('#familles');fa.innerHTML='';FAM.filter(F=>F.niv===E.niv).forEach(F=>fa.appendChild(carte(F)));
+  $('#blocTables').style.display=E.niv==='CP'?'none':'';
+  const tb=$('#tables');tb.innerHTML='<span>Tables travaillées :</span>';
+  R(2,10).forEach(n=>{const b=document.createElement('button');b.textContent=n;if(E.tables.has(n))b.className='on';
+    b.onclick=()=>{E.tables.has(n)?E.tables.delete(n):E.tables.add(n);majReglages();};tb.appendChild(b);});
+  const ft=$('#famTables');ft.innerHTML='';FAM.filter(F=>F.niv==='TAB').forEach(F=>ft.appendChild(carte(F)));
+  seg('#optN',[5,10,15,20],E.n,v=>v,v=>E.n=v);
+  seg('#optT',[0,3,5,6,8,10,15],E.t,v=>v?v+' s':'sans chrono',v=>E.t=v);
+  seg('#optM',['manuel','auto'],E.mode,v=>v==='manuel'?'👆 Je clique à chaque étape':'⏩ Automatique',v=>E.mode=v);
+  const ob=$('#optB');ob.innerHTML='';
+  [['flash','Calcul « flash » : il disparaît après 2 s'],['strat','Montrer la stratégie à la correction'],['visu','Boîtes de 10 à la correction (petits nombres)'],['bip','Bip quand on lève les ardoises']]
+   .forEach(([k,l])=>{const b=document.createElement('button');b.className='bascule'+(E[k]?' on':'');b.innerHTML=`<i></i>${l}`;b.onclick=()=>{E[k]=!E[k];majReglages();};ob.appendChild(b);});
+  const tabsSel=['t1','t2','t3'].some(i=>E.sel.has(i));
+  const nb=E.sel.size;
+  $('#lancer').disabled=!nb||(tabsSel&&!E.tables.size&&[...E.sel].every(i=>i[0]==='t'));
+  $('#infoSel').textContent=nb?`${nb} famille${nb>1?'s':''} choisie${nb>1?'s':''}`+(tabsSel&&!E.tables.size?' – choisis au moins une table':''):'Choisis au moins une famille de faits.';
+  const fg=FRAG[nomClasse()]||[];
+  $('#fragiles').style.display=$('#effFragiles').style.display=fg.length?'':'none';
+  $('#fragiles').textContent=`🎯 Faits fragiles de « ${nomClasse()} » (${fg.length})`;
+  sauver();
+}
+$('#classe').value=E.classe;
+$('#classe').oninput=e=>{E.classe=e.target.value;majReglages();};
+$('#lancer').onclick=()=>demarrer(construire());
+$('#fragiles').onclick=()=>demarrer(melange(FRAG[nomClasse()]||[]).slice(0,Math.max(E.n,5)));
+$('#effFragiles').onclick=()=>{delete FRAG[nomClasse()];ecrire('adaptfaits_fragiles',FRAG);majReglages();};
+
+function construire(){
+  const t=[...E.tables].sort((a,b)=>a-b);
+  const listes=melange([...E.sel].map(id=>melange(FAM.find(F=>F.id===id).gen(t))).filter(l=>l.length));
+  const out=[],vu=new Set();let i=0;
+  while(out.length<E.n&&listes.some(l=>l.length)){
+    const l=listes[i++%listes.length];
+    while(l.length&&vu.has(l[l.length-1].k))l.pop();
+    if(l.length){const x=l.pop();vu.add(x.k);out.push(x);}
+  }
+  return melange(out);
+}
+
+/* ============ Rituel ============ */
+const ETAPES=['🧽 J’efface','🧠 Je calcule','✍️ J’écris','⬆️ Je montre','✅ On vérifie'];
+let S=null,tm=null;
+function programme(ms,fn,barre){annule();tm={fn,fin:performance.now()+ms,duree:ms,barre,reste:null};tm.id=setTimeout(declenche,ms);if(S&&S.pause){clearTimeout(tm.id);tm.reste=ms;}}
+function declenche(){const fn=tm.fn;tm=null;fn();}
+function annule(){if(tm){clearTimeout(tm.id);tm=null;}}
+function basculePause(){
+  if(!S)return;S.pause=!S.pause;$('#voilePause').classList.toggle('on',S.pause);$('#btnPause').textContent=S.pause?'▶ Reprendre':'⏸ Pause';
+  if(!tm)return;
+  if(S.pause){tm.reste=tm.fin-performance.now();clearTimeout(tm.id);}
+  else{tm.fin=performance.now()+tm.reste;tm.id=setTimeout(declenche,tm.reste);tm.reste=null;}
+}
+function boucle(){
+  const ch=$('#chrono');
+  if(tm&&tm.barre){
+    const reste=Math.max(0,tm.reste!=null?tm.reste:tm.fin-performance.now());
+    ch.style.visibility='visible';$('#barre').style.width=(100*reste/tm.duree)+'%';
+    $('#barre').classList.toggle('fin',reste<1500);$('#sec').textContent=Math.ceil(reste/1000)+' s';
+    if(S&&S.phase==='calcul'&&E.t){majEtapes(reste/tm.duree>0.55?[1]:[2]);}
+  }else ch.style.visibility='hidden';
+  requestAnimationFrame(boucle);
+}
+requestAnimationFrame(boucle);
+
+function majEtapes(on){$('#etapes').innerHTML=ETAPES.map((e,i)=>`<div class="${on.includes(i)?'on':''}">${e}</div>`).join('');}
+function majPoints(){$('#points').innerHTML=S.items.map((x,i)=>`<i class="${S.notes[i]||''} ${i===S.i?'cur':''}"></i>`).join('');}
+function bas(html){$('#bas').innerHTML=html;}
+function aff(html){$('#scene').innerHTML=html;}
+const qHTML=x=>x.q.replace('#','<span class="trou"></span>');
+const classeQ=x=>x.k.length>13?'long':'';
+
+function demarrer(items){
+  if(!items.length)return;
+  S={items,i:0,notes:[],pause:false,phase:''};
+  $('#voilePause').classList.remove('on');$('#btnPause').textContent='⏸ Pause';
+  montre('#rituel');efface();
+}
+function montre(id){document.querySelectorAll('.ecran').forEach(e=>e.classList.remove('on'));$(id).classList.add('on');}
+
+function efface(){
+  S.phase='efface';majEtapes([0]);majPoints();bas('');
+  let c=3;
+  const tic=()=>{if(c===0)return calcul();
+    aff(`<div id="grand">${c}<small>${S.i===0?'Ardoise propre, feutre prêt !':'On efface l’ardoise !'}</small></div>`);c--;programme(700,tic);};
+  tic();
+}
+function calcul(){
+  S.phase='calcul';const x=S.items[S.i];majEtapes(E.t?[1]:[1,2]);
+  aff(`<div id="q" class="${classeQ(x)}">${qHTML(x)}</div>`);
+  bas(`<button class="act" onclick="leve()">⬆️ Ardoises levées</button>`);
+  if(E.flash){setTimeout(()=>{if(S&&S.phase==='calcul'&&S.items[S.i]===x){aff(`<div id="grand"><span id="ecris">✍️</span><small>Écris le résultat sur ton ardoise</small></div>`);}},2000);}
+  if(E.t) programme(E.t*1000,leve,true); else annule();
+}
+function bip(){if(!E.bip)return;try{window._ac=window._ac||new(window.AudioContext||window.webkitAudioContext)();const a=window._ac,o=a.createOscillator(),g=a.createGain();
+  o.frequency.value=880;o.connect(g);g.connect(a.destination);g.gain.setValueAtTime(.35,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+.45);o.start();o.stop(a.currentTime+.45);}catch(e){}}
+function leve(){
+  if(!S||S.phase!=='calcul')return;
+  S.phase='leve';annule();bip();majEtapes([3]);const x=S.items[S.i];
+  aff(`<div id="q" class="${classeQ(x)}">${qHTML(x)}</div><div class="leve"><div>⬆️ Ardoises levées !</div></div>`);
+  bas(`<button class="act" onclick="corrige()">✅ Correction</button>`);
+  if(E.mode==='auto')programme(3000,corrige);
+}
+function cadres(a,b){
+  const tot=a+b,nf=tot>10?2:1;let h='<div class="tf">',c=0;
+  for(let k=0;k<nf;k++){h+='<div class="fr10">';for(let i=0;i<10;i++){h+=`<i class="${c<a?'r':c<tot?'b':''}"></i>`;c++;}h+='</div>';}
+  return h+'</div>';
+}
+function corrige(){
+  if(!S||S.phase!=='leve')return;
+  S.phase='corrige';annule();majEtapes([4]);const x=S.items[S.i];
+  const rep=`<span class="rep">${x.a}</span>`;
+  const eq=x.q.includes('#')?x.q.replace('#',rep):`${x.q} = ${rep}`;
+  let h=`<div id="q" class="${x.k.length+x.a.length>11?'long':''}">${eq}</div>`;
+  if(E.strat&&x.h)h+=`<div id="strat">💡 ${x.h}</div>`;
+  if(E.visu&&x.vis&&x.vis[0]+x.vis[1]<=20)h+=cadres(x.vis[0],x.vis[1]);
+  aff(h);
+  const n=S.notes[S.i];
+  bas(`<span class="info" style="font-size:1.3rem">La classe :</span>
+   <button class="note v ${n==='v'?'choisi':''}" onclick="note('v')">😀 Presque tous</button>
+   <button class="note o ${n==='o'?'choisi':''}" onclick="note('o')">😐 Une partie</button>
+   <button class="note r ${n==='r'?'choisi':''}" onclick="note('r')">😟 Peu</button>
+   <button class="act" onclick="suivant()">${S.i<S.items.length-1?'Suivant ➜':'🏁 Bilan'}</button>`);
+  if(E.mode==='auto')programme(9000,suivant);
+}
+function note(c){if(!S||S.phase!=='corrige')return;S.notes[S.i]=c;majPoints();programme(E.mode==='auto'?1200:600,suivant);
+  document.querySelectorAll('.note').forEach(b=>b.classList.toggle('choisi',b.classList.contains(c)));}
+function suivant(){
+  if(!S||S.phase!=='corrige')return;annule();
+  if(S.i<S.items.length-1){S.i++;efface();}else bilan();
+}
+function arreter(){annule();if(S&&S.notes.some(Boolean))bilan();else{S=null;montre('#reglages');majReglages();}}
+
+/* ============ Bilan ============ */
+function bilan(){
+  annule();const it=S.items,no=S.notes;S.phase='bilan';
+  const c={v:0,o:0,r:0};no.forEach(n=>n&&c[n]++);
+  $('#compte').innerHTML=`<div style="background:var(--vert)">😀 ${c.v}</div><div style="background:var(--orange)">😐 ${c.o}</div><div style="background:var(--rouge)">😟 ${c.r}</div><div style="background:#9aa6b4">${it.length} calculs</div>`;
+  $('#grille').innerHTML=it.map((x,i)=>{const eq=x.q.includes('#')?x.q.replace('#',`<u>${x.a}</u>`):`${x.q} = ${x.a}`;
+    return `<div class="${no[i]||''}">${eq}<small>${x.h||''}</small></div>`;}).join('');
+  // mémoire des faits fragiles par classe
+  const k=nomClasse(),liste=FRAG[k]||[],m=new Map(liste.map(x=>[x.k,x]));
+  it.forEach((x,i)=>{if(no[i]==='o'||no[i]==='r')m.set(x.k,{q:x.q,a:x.a,h:x.h,vis:x.vis,k:x.k});else if(no[i]==='v')m.delete(x.k);});
+  FRAG[k]=[...m.values()].slice(-60);ecrire('adaptfaits_fragiles',FRAG);
+  const aRev=it.filter((x,i)=>no[i]==='o'||no[i]==='r');
+  $('#rejouer').style.display=aRev.length?'':'none';
+  $('#rejouer').onclick=()=>demarrer(melange(aRev));
+  $('#infoBilan').textContent=`Les faits orange et rouges sont gardés dans les « faits fragiles » de « ${k} » (sur cet appareil) ; un fait réussi plus tard en sort.`;
+  montre('#bilan');
+}
+$('#encore').onclick=()=>demarrer(construire());
+$('#retour').onclick=()=>{S=null;montre('#reglages');majReglages();};
+$('#stop').onclick=arreter;
+$('#btnPause').onclick=basculePause;
+$('#plein').onclick=()=>{try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();}catch(e){}};
+
+/* ============ Clavier ============ */
+document.addEventListener('keydown',e=>{
+  if(!S||S.phase==='bilan'||e.target.tagName==='INPUT')return;
+  if(e.key==='p'||e.key==='P'){basculePause();return;}
+  if(e.key==='Escape'){arreter();return;}
+  if(S.pause)return;
+  if([' ','Enter','ArrowRight'].includes(e.key)){e.preventDefault();
+    if(S.phase==='calcul')leve();else if(S.phase==='leve')corrige();else if(S.phase==='corrige')suivant();}
+  if(S.phase==='corrige'&&['1','2','3'].includes(e.key))note({1:'v',2:'o',3:'r'}[e.key]);
+});
+
+majReglages();
+</script>
+</body>
+</html>
